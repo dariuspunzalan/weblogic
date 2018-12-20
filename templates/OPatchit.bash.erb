@@ -1,0 +1,96 @@
+#!/bin/bash
+
+##############################################################
+# Managed by Puppet, do not edit manually
+# Script to run OPatch from puppet
+# Vesion: 1.0 06-Dec-2018 - Darius Punzalan
+##############################################################
+
+weblogic_home=<%= @wls_fullhome %>
+export JAVA_HOME=<%= @java_home %>
+OPATCHDIR=${weblogic_home}/OPatch
+OPATCH=${OPATCHDIR}/opatch
+patchid=$1
+logfile=${OPATCHDIR}/log/opatchit.log
+lock_file=${OPATCHDIR}/log/opatchit.lock
+PID=$$
+
+cleanup(){
+  if [ $1 -ne 0 ]
+  then
+    /bin/rm -rf $OPATCHDIR/patches/${patchid}
+  fi
+  /bin/rm ${lock_file}
+  exit $1
+}
+trap cleanup 1 2 3 6
+
+write_log(){
+  DATE=`date '+%b %d %H:%M:%S'`
+  echo "${DATE} $@" >> ${logfile}
+}
+
+## Check if another instance is running
+if [ -f ${lock_file} ]
+  then
+  write_log "Error: ${lock_file} exists, check if there is another instance running..."
+  cleanup 1
+else
+  echo "$PID" > ${lock_file}
+fi
+
+check_patched(){
+  $OPATCH lsinventory -jdk $JAVA_HOME | grep "^Patch"|grep $1 2>/dev/null
+}
+
+# fail if any wlserver running in the ps list
+ps -ef | grep [w]lserv > /dev/null
+if [ $? -eq 0 ]
+then
+  write_log "FAIL: 1: wlserver seems to be running, application not shut down"
+  cleanup 1
+fi
+
+# check userid is weblogic
+if [ `id -un` != 'weblogic' ]
+then
+  write_log "FAIL: 1: script must be run as weblogic"
+  cleanup 1
+fi
+
+# check OPatch directory is where we expect
+if [ ! -d ${weblogic_home}/OPatch ]
+then
+  write_log "FAIL: 2: directory check on OPatch directory failed"
+  cleanup 1
+fi
+
+# check $JAVA_HOME has non-zero length
+if [ -z $JAVA_HOME ]
+then
+  write_log "FAIL: 2: JAVA_HOME has zero length or unset"
+  cleanup 2
+fi
+
+check_patched ${patchid}
+if [ $? -eq 0 ]
+then
+  write_log "Skip: System has already been patched with ${patchid}. Skipping"
+  cleanup 0
+else
+  write_log "INFO: Applying ${patchid}..."
+  result=`yes y | $OPATCH apply -jdk $JAVA_HOME $OPATCHDIR/patches/${patchid}`
+  sleep 10
+fi
+
+check_patched ${patchid}
+if [ $? -eq 0 ]
+then
+  write_log "$result"
+  write_log "Success: System has successfully patched with ${patchid}"
+  cleanup 0
+else
+  write_log "$result"
+  write_log "FAIL: System has failed to apply ${patchid}"
+  clean_up 3
+fi

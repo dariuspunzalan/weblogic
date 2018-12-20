@@ -1,0 +1,22 @@
+#!/bin/bash
+
+#Puppet controlled file, do not edit manually
+
+export ORACLE_BASE=<%= @oracle_base %>
+export ORACLE_HOME=<%= @wls_fullhome %>
+export MW_HOME=${ORACLE_HOME}
+export JAVA_HOME=<%= @java_home %>
+PATH=${JAVA_HOME}/bin:$PATH
+
+weblogic_base=<%= @weblogic_base %>
+wls_distro_file=${weblogic_base}/src/<%= @wls_distro %>
+response_file=${weblogic_base}/src/wls-silent.install.rsp
+
+java -d64 -Xmx1024m  -Dspace.detection=false \
+     -jar ${wls_distro_file} \
+     -silent  \
+     -responseFile ${response_file} \
+     -invPtrLoc "${weblogic_base}/etc/oraInst.loc" \
+     -logLevel info \
+     -novalidation \
+     -ignoreSysPrereqs
