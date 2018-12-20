@@ -1,4 +1,4 @@
-class bcc::profiles::weblogic::install() inherits bcc::profiles::weblogic::params
+class weblogic::install() inherits weblogic::params
 {
 
   if ! defined(Group[$weblogic_group]) {
