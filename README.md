@@ -1,12 +1,12 @@
-# bcc
+# weblogic
 
 #### Table of Contents
 
 1. [Description](#description)
-1. [Setup - The basics of getting started with bcc](#setup)
-    * [What bcc affects](#what-bcc-affects)
+1. [Setup - The basics of getting started with weblogic](#setup)
+    * [What weblogic affects](#what-weblogic-affects)
     * [Setup requirements](#setup-requirements)
-    * [Beginning with bcc](#beginning-with-bcc)
+    * [Beginning with weblogic](#beginning-with-weblogic)
 1. [Usage - Configuration options and additional functionality](#usage)
 1. [Reference - An under-the-hood peek at what the module is doing and how](#reference)
 1. [Limitations - OS compatibility, etc.](#limitations)
@@ -47,7 +47,7 @@ If your most recent release breaks compatibility or requires particular steps
 for upgrading, you might want to include an additional "Upgrading" section
 here.
 
-### Beginning with bcc
+### Beginning with weblogic
 
 The very basic steps needed for a user to get the module up and running. This
 can include setup steps, if necessary, or it can be an example of the most
